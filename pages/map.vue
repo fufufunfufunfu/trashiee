@@ -2,6 +2,9 @@
   <div class="container">
     <div class="map">
       <h1 class="map__title">
+        <nuxt-link class="map__logo" to="/">
+          <img src="~/assets/image/title.png" alt="" />
+        </nuxt-link>
         遊びたいエリアを選ぼう！
       </h1>
       <svg
@@ -35,7 +38,7 @@
           class="pin"
           id="nakano"
           data-ja="中野区"
-          @click="selectArea"
+          @click="selectArea('nakano')"
         />
         <path
           d="M518.765 666.978C525.342 666.978 530.674 661.645 530.674 655.067C530.674 648.489 525.342 643.156 518.765 643.156C512.187 643.156 506.855 648.489 506.855 655.067C506.855 661.645 512.187 666.978 518.765 666.978Z"
@@ -43,7 +46,7 @@
           class="pin"
           id="hachioji"
           data-ja="八王子市"
-          @click="selectArea"
+          @click="selectArea('hachioji')"
         />
         <path
           d="M1132.71 642.149C1139.29 642.149 1144.62 636.816 1144.62 630.238C1144.62 623.659 1139.29 618.326 1132.71 618.326C1126.13 618.326 1120.8 623.659 1120.8 630.238C1120.8 636.816 1126.13 642.149 1132.71 642.149Z"
@@ -51,7 +54,7 @@
           class="pin"
           id="chiyoda"
           data-ja="千代田区"
-          @click="selectArea"
+          @click="selectArea('chiyoda')"
         />
         <defs>
           <linearGradient
@@ -83,7 +86,7 @@
         :key="pin.city"
         class="map__pin"
         :style="{ top: pin.top - 110 + 'px', left: pin.left + 12 + 'px' }"
-        :remain="10"
+        :remain="remain(pin.city)"
         :city="pin.ja"
       />
     </div>
@@ -91,14 +94,14 @@
       <div class="modal__inner">
         <Gauge
           class="modal__gauge"
-          :old="old"
+          :old="current"
           :current="current"
           :show="showModal"
           :anime="false"
         />
         <p class="modal__text">このエリアで遊びますか？</p>
         <div class="modal__btn-wrap">
-          <Button class="modal__btn">OK</Button>
+          <Button class="modal__btn" @click="startGame">OK</Button>
           <Button class="modal__btn" @click="showModal = false">もどる</Button>
         </div>
       </div>
@@ -155,6 +158,15 @@
   height: 100vh;
 
   overflow: hidden;
+  &__logo {
+    position: absolute;
+    width: 180px;
+    top: -10px;
+    left: -60px;
+    img {
+      width: 100%;
+    }
+  }
   &__title {
     position: absolute;
     width: 80%;
@@ -195,6 +207,7 @@
 import Gauge from '~/components/Gauge'
 import Button from '~/components/Button'
 import MapPin from '~/components/MapPin'
+import { NUM_INITIAL_FAIRY } from '~/lib/constant'
 
 export default {
   components: {
@@ -202,20 +215,18 @@ export default {
     Button,
     MapPin
   },
+  computed: {
+    current() {
+      return {
+        ...this.$store.state[this.selectedArea]
+      }
+    }
+  },
   data() {
     return {
       showModal: false,
-      pins: [],
-      old: {
-        combustible: 80.0,
-        incombustible: 40.0,
-        resources: 60.0
-      },
-      current: {
-        combustible: 70.0,
-        incombustible: 20.0,
-        resources: 40.0
-      }
+      selectedArea: 'chiyoda',
+      pins: []
     }
   },
   mounted() {
@@ -233,8 +244,21 @@ export default {
     })
   },
   methods: {
-    selectArea(e) {
+    selectArea(area) {
+      this.selectedArea = area
       this.showModal = true
+    },
+    startGame() {
+      this.$router.push({ path: 'game', query: { area: this.selectedArea } })
+    },
+    remain(area) {
+      const obj = this.$store.state[area]
+      const numTypes = Object.keys(obj).length
+      let total = 0
+      Object.keys(obj).forEach(key => {
+        total += obj[key]
+      })
+      return Math.floor((total / (NUM_INITIAL_FAIRY * numTypes)) * 100)
     }
   }
 }

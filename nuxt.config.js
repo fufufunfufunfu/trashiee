@@ -112,7 +112,8 @@ export default {
   plugins: [
     '~/plugins/anime',
     '~/plugins/lodash',
-    { src: '~plugins/swiper', ssr: false }
+    { src: '~plugins/swiper', ssr: false },
+    { src: '~plugins/persistedstate.js', ssr: false }
   ],
   /*
    ** Nuxt.js modules

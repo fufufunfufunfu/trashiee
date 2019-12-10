@@ -1,0 +1,42 @@
+[
+  {
+    "name": "アルミホイル",
+    "type": "incombustible",
+    "img": "/trash/aluminiumfoil.png"
+  },
+  {
+    "name": "コップ",
+    "type": "incombustible",
+    "img": "/trash/glass.png"
+  },
+  {
+    "name": "カーテン",
+    "type": "combustible",
+    "img": "/trash/curtain.png"
+  },
+  {
+    "name": "生ゴミ",
+    "type": "combustible",
+    "img": "/trash/garbage.png"
+  },
+  {
+    "name": "雑誌",
+    "type": "resources",
+    "img": "/trash/magazine.png"
+  },
+  {
+    "name": "牛乳パック",
+    "type": "resources",
+    "img": "/trash/milk.png"
+  },
+  {
+    "name": "ベッド",
+    "type": "oversized",
+    "img": "/trash/bed.png"
+  },
+  {
+    "name": "いす",
+    "type": "oversized",
+    "img": "/trash/chair.png"
+  }
+]

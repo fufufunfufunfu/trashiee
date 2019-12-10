@@ -1,6 +1,9 @@
 <template>
-  <ul class="gauge">
+  <ul class="gauge" v-if="show">
     <li v-for="key in keys" :key="key" class="gauge__item">
+      <span class="gauge__img">
+        <img :src="fairyImgs[key]" alt="" />
+      </span>
       <span class="gauge__num"
         ><span class="remain">残り</span>{{ countObj[key] }}</span
       >
@@ -9,7 +12,7 @@
           :class="['gauge__bar', key]"
           :style="[
             isAnimating ? { transition: 'width ease 1s' } : '',
-            { width: o[key] + '%' }
+            { width: (o[key] / numInitFairy) * 100 + '%' }
           ]"
         ></span>
       </span>
@@ -18,6 +21,8 @@
 </template>
 
 <script>
+import { NUM_INITIAL_FAIRY } from '~/lib/constant'
+
 export default {
   props: {
     current: {
@@ -40,6 +45,7 @@ export default {
   watch: {
     show: {
       handler(val) {
+        if (!this.show) return
         if (this.anime && val) {
           this.c = this.current
           this.o = this.old
@@ -50,12 +56,12 @@ export default {
           this.o = this.current
           this.countObj = this.current
         }
-      },
-      immediate: true
+      }
     }
   },
   data() {
     return {
+      numInitFairy: NUM_INITIAL_FAIRY,
       isAnimating: false,
       keys: [
         'combustible',
@@ -66,10 +72,19 @@ export default {
       ],
       c: null,
       o: null,
-      countObj: null
+      countObj: null,
+      fairyImgs: {
+        combustible: require('~/assets/image/kanen.png'),
+        incombustible: require('~/assets/image/funen.png'),
+        resources: require('~/assets/image/shigen.png'),
+        oversized: require('~/assets/image/sodai.png'),
+        hazardous: require('~/assets/image/yugai.png')
+      }
     }
   },
-  mounted() {},
+  mounted() {
+    // window.console.log(this.current)
+  },
   methods: {
     animation() {
       this.isAnimating = true
@@ -107,15 +122,23 @@ export default {
 
 <style lang="scss" scoped>
 .gauge {
-  padding: 80px;
+  padding: 24px;
   background: #f8f8f8;
-  border-radius: 160px;
+  border-radius: 16px;
   &__item {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     margin-bottom: 40px;
     &:last-child {
       margin-bottom: 0;
+    }
+  }
+  &__img {
+    display: inline-block;
+    width: 60px;
+    margin-right: 16px;
+    img {
+      width: 100%;
     }
   }
   &__bar-wrap {
@@ -137,6 +160,12 @@ export default {
     }
     &.resources {
       background: $c-green;
+    }
+    &.oversized {
+      background: #ffe249;
+    }
+    &.hazardous {
+      background: #b88cff;
     }
   }
   &__num {

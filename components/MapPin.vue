@@ -1,6 +1,6 @@
 <template>
   <div class="pin">
-    <span class="pin__remain">残り{{ remain }}</span>
+    <span class="pin__remain">残り{{ remain }}%</span>
     <h4 class="pin__city">{{ city }}</h4>
   </div>
 </template>

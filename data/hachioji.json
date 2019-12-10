@@ -1,0 +1,47 @@
+[
+  {
+    "name": "コップ",
+    "type": "incombustible",
+    "img": "/trash/glass.png"
+  },
+  {
+    "name": "かさ",
+    "type": "incombustible",
+    "img": "/trash/umbrella.png"
+  },
+  {
+    "name": "生ゴミ",
+    "type": "combustible",
+    "img": "/trash/garbage.png"
+  },
+  {
+    "name": "貝がら",
+    "type": "combustible",
+    "img": "/trash/shell.png"
+  },
+  {
+    "name": "雑誌",
+    "type": "resources",
+    "img": "/trash/magazine.png"
+  },
+  {
+    "name": "ティッシュ",
+    "type": "resources",
+    "img": "/trash/tissue.png"
+  },
+  {
+    "name": "ベッド",
+    "type": "oversized",
+    "img": "/trash/bed.png"
+  },
+  {
+    "name": "押入れ",
+    "type": "oversized",
+    "img": "/trash/chest.png"
+  },
+  {
+    "name": "乾電池",
+    "type": "hazardous",
+    "img": "/trash/battery.png"
+  }
+]

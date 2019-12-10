@@ -48,20 +48,21 @@ export default {
 
 <style lang="scss" scoped>
 @mixin btnBgColor($color) {
-  background-color: $color;
+  background: $color;
   &:hover,
   &:focus {
-    background-color: darken($color, 8%);
+    background: $color;
     cursor: pointer;
   }
 
   &:active {
-    background-color: darken($color, 16%);
+    background: $color;
     cursor: pointer;
   }
 }
 
 .btn {
+  $c-bg: linear-gradient(270deg, #ff909e, #ffc37d);
   border: none;
   cursor: pointer;
   display: inline-block;
@@ -94,7 +95,7 @@ export default {
   }
 
   &--primary {
-    @include btnBgColor($c-orange);
+    @include btnBgColor($c-bg);
   }
 }
 </style>

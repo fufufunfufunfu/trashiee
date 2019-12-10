@@ -1,17 +1,24 @@
 <template>
   <div class="game">
-    <div class="game__modal">
+    <transition name="splash">
+      <div v-if="showSplash" class="game__splash">
+        <p class="game__splash-msg">{{ splashMsg }}</p>
+      </div>
+    </transition>
+    <div v-if="showModal" class="game__modal">
       <div class="game__slider">
-        <button @click="prevSlider">
+        <button class="game__slider-prev" @click="prevSlider">
           <img src="~/assets/image/slider_left.svg" alt="" />
         </button>
         <div class="game__slider-img">
-          <img :src="require(`~/assets/image/house_${sliderNum}.svg`)" alt="" />
+          <img :src="slides[sliderNum - 1].img" alt="" />
         </div>
-        <button @click="nextSlider">
+        <button class="game__slider-next" @click="nextSlider">
           <img src="~/assets/image/slider_right.svg" alt="" />
         </button>
-        <Button class="game__slider-btn">SKIP</Button>
+        <Button class="game__slider-btn" @click="startGame">{{
+          isLastSlider ? 'START' : 'SKIP'
+        }}</Button>
       </div>
     </div>
     <span class="game__count">
@@ -25,10 +32,10 @@
     <div class="game__table-upper">
       <div class="game__table-wrap">
         <span class="game__fairy red">
-          <img src="~/assets/image/fairy_red.svg" alt="" />
+          <img :src="fairyImgs.combustible" alt="" />
         </span>
         <span class="game__fairy blue">
-          <img src="~/assets/image/fairy_blue.svg" alt="" />
+          <img :src="fairyImgs.incombustible" alt="" />
         </span>
         <div class="game__table">
           <span class="drop-zone red" data-trash-type="combustible"></span>
@@ -38,10 +45,10 @@
       </div>
       <div class="game__table-wrap">
         <span class="game__fairy green">
-          <img src="~/assets/image/fairy_green.svg" alt="" />
+          <img :src="fairyImgs.resources" alt="" />
         </span>
         <span class="game__fairy yellow">
-          <img src="~/assets/image/fairy_yellow.svg" alt="" />
+          <img :src="fairyImgs.oversized" alt="" />
         </span>
         <div class="game__table">
           <span class="drop-zone green" data-trash-type="resources"></span>
@@ -51,8 +58,14 @@
       </div>
     </div>
     <div class="game__table-lower">
-      <div>
-        <img src="~/assets/image/table.svg" alt="" />
+      <div class="game__table-wrap">
+        <span class="game__fairy purple">
+          <img :src="fairyImgs.hazardous" alt="" />
+        </span>
+        <div class="game__table">
+          <span class="drop-zone purple" data-trash-type="hazardous"></span>
+          <img src="~/assets/image/table.svg" alt="" />
+        </div>
       </div>
     </div>
     <div
@@ -62,11 +75,12 @@
       :style="{ transform: `translateX(-${waiterOffset}px)` }"
     >
       <div class="game__waiter">
-        <img src="~/assets/image/sample.png" alt="" />
+        <img src="~/assets/image/waiter.png" alt="" />
       </div>
       <div id="trash-dish">
         <span
           class="game__trash"
+          id="trash"
           @touchstart.prevent
           @touchmove.prevent="touchMove"
           @touchend.prevent="touchEnd"
@@ -76,6 +90,11 @@
         </span>
       </div>
     </div>
+    <p>{{ combustible }}</p>
+    <button @click="subtractFairy({ key: 'combustible', num: 10 })">
+      可燃をひく
+    </button>
+    <button @click="clearLocalStorage">クリア</button>
   </div>
 </template>
 
@@ -88,21 +107,21 @@ export default {
   },
   data() {
     return {
+      area: null,
       sliderNum: 1,
+      showSplash: false,
+      splashMsg: '',
+      anime: null,
+      pending: false,
+      showModal: false,
       currentSlider: {
         num: 1,
         img: require(`~/assets/image/house_1.svg`)
       },
       solvedCount: 0,
-      currentCount: 0,
+      currentCount: 1,
       numProblem: 10,
-      results: [
-        {
-          answer: '',
-          correct: '',
-          solved: false
-        }
-      ],
+      results: [],
       waiterOffset: 250,
       trash: null,
       trashes: [
@@ -112,28 +131,90 @@ export default {
           type: 'combustible',
           img: require('~/assets/image/sample.png')
         }
-      ]
+      ],
+      slides: [
+        { img: require(`~/assets/image/slide_1.png`) },
+        { img: require(`~/assets/image/slide_2.png`) }
+      ],
+      fairyImgs: {
+        combustible: require('~/assets/image/kanen.png'),
+        incombustible: require('~/assets/image/funen.png'),
+        resources: require('~/assets/image/shigen.png'),
+        oversized: require('~/assets/image/sodai.png'),
+        hazardous: require('~/assets/image/yugai.png')
+      },
+      fairyGoodImgs: {
+        combustible: require('~/assets/image/kanen_good.png'),
+        incombustible: require('~/assets/image/funen_good.png'),
+        resources: require('~/assets/image/shigen_good.png'),
+        oversized: require('~/assets/image/sodai_good.png'),
+        hazardous: require('~/assets/image/yugai_good.png')
+      },
+      fairyBadImgs: {
+        combustible: require('~/assets/image/kanen_bad.png'),
+        incombustible: require('~/assets/image/funen_bad.png'),
+        resources: require('~/assets/image/shigen_bad.png'),
+        oversized: require('~/assets/image/sodai_bad.png'),
+        hazardous: require('~/assets/image/yugai_bad.png')
+      }
     }
   },
   computed: {
+    combustible() {
+      return this.$store.state[this.area].combustible
+    },
+    incombustible() {
+      return this.$store.state[this.area].incombustible
+    },
+    resources() {
+      return this.$store.state[this.area].resources
+    },
+    oversized() {
+      return this.$store.state[this.area].oversized
+    },
+    hazardous() {
+      return this.$store.state[this.area].hazardous
+    },
     prevSliderBtn() {
       return this.sliderNum > 1
     },
     nextSliderBtn() {
       return this.sliderNum < 4
+    },
+    isLastSlider() {
+      return this.sliderNum === this.slides.length
     }
   },
+  created() {
+    this.$route.query.area
+      ? (this.area = this.$route.query.area)
+      : (this.area = 'chiyoda')
+  },
   mounted() {
-    this.waiterMove()
+    this.loadArea()
+    this.tutorial()
+    // this.startGame()
   },
   methods: {
+    tutorial() {
+      this.showModal = true
+    },
+    subtractFairy({ key, num }) {
+      this.$store.commit(`${this.area}/subtractFairy`, {
+        key: key,
+        num: num
+      })
+    },
     prevSlider() {
       this.sliderNum > 1 ? this.sliderNum-- : (this.sliderNum = 1)
     },
     nextSlider() {
-      this.sliderNum < 4 ? this.sliderNum++ : (this.sliderNum = 4)
+      this.sliderNum < this.slides.length
+        ? this.sliderNum++
+        : (this.sliderNum = this.slides.length)
     },
     touchMove(e) {
+      if (this.pending) return
       const ele = e.currentTarget
       document.documentElement.appendChild(ele)
 
@@ -162,6 +243,7 @@ export default {
       window.console.log(newParentElem)
       if (newParentElem.classList.contains('drop-zone')) {
         newParentElem.appendChild(droppedElem)
+        this.pending = true
         this.judgeTrash(newParentElem, droppedElem)
       } else {
         droppedElem.parentNode.removeChild(droppedElem)
@@ -177,61 +259,177 @@ export default {
       const eleType = ele.dataset.trashType
       if (eleType === zoneType) {
         this.solvedCount++
+        this.subtractFairy({ key: zoneType, num: 1 })
+        const currentImg = this.fairyImgs[zoneType]
+        this.fairyImgs[zoneType] = this.fairyGoodImgs[zoneType]
+        window.setTimeout(() => {
+          this.fairyImgs[zoneType] = currentImg
+        }, 2000)
         this.results.push({
-          answer: eleType,
-          correct: zoneType,
+          img: this.trash.img,
+          answer: zoneType,
+          correct: eleType,
           solved: true
         })
       } else {
+        const currentImg = this.fairyImgs[zoneType]
+        this.fairyImgs[zoneType] = this.fairyBadImgs[zoneType]
+        window.setTimeout(() => {
+          this.fairyImgs[zoneType] = currentImg
+        }, 2000)
         this.results.push({
-          answer: eleType,
-          correct: zoneType,
+          img: this.trash.img,
+          answer: zoneType,
+          correct: eleType,
           solved: false
         })
+        ele.parentNode.removeChild(ele)
+        const dish = document.getElementById('trash-dish')
+
+        dish.appendChild(ele)
       }
-      this.currentCount++
+      this.anime.pause()
+      this.anime = this.$anime({
+        targets: '#waiter-anim',
+        translateX: innerWidth + this.waiterOffset,
+        easing: 'linear',
+        duration: 2000
+      })
+      this.anime.finished.then(this.clearTrash)
     },
     waiterMove() {
       const innerWidth = window.innerWidth
+      window.console.log(innerWidth)
       this.selectTrash()
       this.$nextTick(() => {
-        const anime = this.$anime({
+        this.anime = this.$anime({
           targets: '#waiter-anim',
           translateX: [-this.waiterOffset, innerWidth + this.waiterOffset],
           easing: 'linear',
           duration: 20000
         })
-        anime.finished.then(this.clearTrash)
+        this.anime.finished.then(this.clearTrash)
       })
-
-      // window.setTimeout(() => {
-      //   this.$anime({
-      //     targets: '#waiter-anim',
-      //     translateX: innerWidth + 100,
-      //     easing: 'linear',
-      //     duration: 3000
-      //   })
-      // }, 1)
     },
     selectTrash() {
-      window.console.log(innerWidth)
       this.trash = this.trashes[Math.floor(Math.random() * this.trashes.length)]
     },
     clearTrash() {
+      if (!this.pending) {
+        const trash = document.getElementById('trash')
+        this.results.push({
+          img: this.trash.img,
+          answer: null,
+          correct: trash.dataset.trashType,
+          solved: false
+        })
+      }
       this.trash = null
-      window.console.log('cleared')
-      this.waiterMove()
+      const ele = document.getElementById('trash')
+      ele.parentNode.removeChild(ele)
+      const dish = document.getElementById('trash-dish')
+      dish.appendChild(ele)
+      this.pending = false
+      if (this.currentCount < 10) {
+        this.currentCount++
+        this.waiterMove()
+      } else {
+        this.finishGame()
+      }
+    },
+    loadArea() {
+      const trashes = require(`~/data/${this.area}.json`)
+      this.trashes = trashes
+    },
+    clearLocalStorage() {
+      localStorage.clear()
+    },
+    insertResults() {
+      this.$store.commit('result/insertResults', { results: this.results })
+    },
+    finishGame() {
+      this.trash = null
+      this.insertResults()
+      this.splashMsg = 'FINISH!'
+      this.showSplash = true
+      window.console.log(this.results)
+      window.setTimeout(() => {
+        this.$router.push({ path: 'result', query: { area: this.area } })
+      }, 2000)
+    },
+    startGame() {
+      this.showModal = false
+      this.showSplash = true
+      this.splashMsg = 3
+      new Promise(resolve => {
+        window.setTimeout(() => {
+          window.console.log('2')
+          this.splashMsg = 2
+          resolve()
+        }, 1000)
+      })
+        .then(() => {
+          return new Promise(resolve => {
+            window.setTimeout(() => {
+              window.console.log('1')
+              this.splashMsg = 1
+              resolve()
+            }, 1000)
+          })
+        })
+        .then(() => {
+          return new Promise(resolve => {
+            window.setTimeout(() => {
+              window.console.log('start')
+              this.splashMsg = 'START!'
+              resolve()
+            }, 1000)
+          })
+        })
+        .then(() => {
+          window.setTimeout(() => {
+            this.showSplash = false
+            this.waiterMove()
+          }, 500)
+        })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.splash {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.5s;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
 .game {
   position: relative;
   width: 100vw;
   height: 100vh;
   background: linear-gradient(#8f6f5d, #8c683d);
+  overflow: hidden;
+  &__splash {
+    position: absolute;
+    z-index: 700;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.4);
+  }
+  &__splash-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    font-size: 140px;
+    color: #7c7c7c;
+  }
   &__modal {
     position: absolute;
     z-index: 500;
@@ -252,10 +450,31 @@ export default {
     background: #fff;
     border-radius: 24px;
   }
+  &__slider-prev {
+    padding: 40px;
+  }
+  &__slider-next {
+    padding: 40px;
+  }
+  &__slider-img {
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+    height: calc(100% - 80px);
+    overflow: hidden;
+
+    img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+    }
+  }
   &__slider-btn {
     position: absolute;
-    right: 0;
-    bottom: 0;
+    right: 40px;
+    bottom: 40px;
   }
   &__count {
     position: absolute;
@@ -283,7 +502,8 @@ export default {
     padding-top: 200px;
   }
   &__table-lower {
-    text-align: center;
+    display: flex;
+    justify-content: center;
   }
   &__table-wrap {
     position: relative;
@@ -317,6 +537,12 @@ export default {
       right: -23px;
       width: 253px;
     }
+    &.purple {
+      top: -160px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+    }
   }
   &__waiter-wrap {
     position: absolute;
@@ -331,33 +557,42 @@ export default {
   }
   &__trash {
     display: inline-block;
+    width: 150px;
+    height: 150px;
+    img {
+      width: 100%;
+    }
   }
 }
 .drop-zone {
   position: absolute;
-  display: inline-block;
-  width: 150px;
-  height: 150px;
-  opacity: 0.2;
+  top: -100px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 180px;
+  height: 250px;
+  // opacity: 0.2;
   &.red {
-    top: 0;
     left: 0;
-    background: red;
+    // background: red;
   }
   &.blue {
-    top: 0;
     right: 0;
-    background: blue;
+    // background: blue;
   }
   &.green {
-    top: 0;
     left: 0;
-    background: green;
+    // background: green;
   }
   &.yellow {
-    top: 0;
     right: 0;
-    background: yellow;
+    // background: yellow;
+  }
+  &.purple {
+    left: 50%;
+    transform: translateX(-50%);
+    // background: purple;
   }
 }
 </style>

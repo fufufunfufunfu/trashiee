@@ -1,19 +1,47 @@
 <template>
   <div class="container">
+    <div class="tap-area" @click="$router.push('map')">
+      <div class="logo">
+        <img src="~/assets/image/title.png" alt="" />
+      </div>
+      <p>TAP TO START</p>
+    </div>
     <div class="bg">
-      <ul class="house-wrap">
-        <transition-group name="house">
-          <li class="house" v-for="house in houses" :key="house.id">
-            <img :src="house.src" alt="" />
-          </li>
-        </transition-group>
-      </ul>
+      <div class="house">
+        <img src="~/assets/image/top_background.svg" alt="" />
+      </div>
       <div class="ground"></div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.tap-area {
+  position: absolute;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  p {
+    position: absolute;
+    bottom: 100px;
+    width: 100%;
+    font-size: 64px;
+    font-weight: 700;
+    color: #8a6c6c;
+    text-align: center;
+  }
+}
 .bg {
   width: 100vw;
   height: 100vh;
@@ -30,26 +58,23 @@
   height: 200px;
   z-index: 100;
 }
-.house-wrap {
+.house {
   flex-basis: 0;
   flex-grow: 1;
   position: relative;
-}
-.house {
-  position: absolute;
-  bottom: -12px;
-  right: -400px;
-
-  &-enter-active {
-    animation: house linear 16s;
+  img {
+    position: absolute;
+    bottom: -4px;
+    width: 600vw;
   }
+  animation: house 30s linear infinite;
 }
 @keyframes house {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-200vw);
+    transform: translateX(-500vw);
   }
 }
 </style>
@@ -57,47 +82,9 @@
 <script>
 export default {
   data() {
-    return {
-      houseImagePaths: [
-        require('~/assets/image/house_1.svg'),
-        require('~/assets/image/house_2.svg'),
-        require('~/assets/image/house_3.svg'),
-        require('~/assets/image/house_4.svg')
-      ],
-      houses: []
-    }
+    return {}
   },
-  mounted() {
-    window.setInterval(this.createHouse, 2000)
-    window.setTimeout(this.startDestroy, 12000)
-  },
-  methods: {
-    selectImage() {
-      const index = Math.floor(Math.random() * 4)
-      return this.houseImagePaths[index]
-    },
-    getNextId() {
-      if (this.houses === []) return 0
-      let currentMaxId = 0
-      this.houses.forEach(house => {
-        if (currentMaxId < house.id) currentMaxId = house.id
-      })
-      return currentMaxId + 1
-    },
-    createHouse() {
-      window.console.log('created')
-      this.houses.push({
-        id: this.getNextId(),
-        src: this.selectImage()
-      })
-    },
-    destroyHouse() {
-      window.console.log('destroyed')
-      this.houses.shift()
-    },
-    startDestroy() {
-      window.setInterval(this.destroyHouse, 2000)
-    }
-  }
+  mounted() {},
+  methods: {}
 }
 </script>

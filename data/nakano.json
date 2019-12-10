@@ -1,0 +1,42 @@
+[
+  {
+    "name": "ガズボンベ",
+    "type": "incombustible",
+    "img": "/trash/gas.png"
+  },
+  {
+    "name": "コップ",
+    "type": "incombustible",
+    "img": "/trash/glass.png"
+  },
+  {
+    "name": "生ゴミ",
+    "type": "combustible",
+    "img": "/trash/garbage.png"
+  },
+  {
+    "name": "絵の具",
+    "type": "combustible",
+    "img": "/trash/paints.png"
+  },
+  {
+    "name": "コート",
+    "type": "resources",
+    "img": "/trash/coat.png"
+  },
+  {
+    "name": "雑誌",
+    "type": "resources",
+    "img": "/trash/magazine.png"
+  },
+  {
+    "name": "ベッド",
+    "type": "oversized",
+    "img": "/trash/bed.png"
+  },
+  {
+    "name": "おけ",
+    "type": "oversized",
+    "img": "/trash/tub.png"
+  }
+]
