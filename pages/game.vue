@@ -124,6 +124,7 @@ export default {
       results: [],
       waiterOffset: 250,
       trash: null,
+      previousTrashIndex: null,
       trashes: [
         {
           id: 1,
@@ -312,7 +313,13 @@ export default {
       })
     },
     selectTrash() {
-      this.trash = this.trashes[Math.floor(Math.random() * this.trashes.length)]
+      let index = Math.floor(Math.random() * this.trashes.length)
+      console.log(index)
+      while (index === this.previousTrashIndex) {
+        index = Math.floor(Math.random() * this.trashes.length)
+      }
+      this.trash = this.trashes[index]
+      this.previousTrashIndex = index
     },
     clearTrash() {
       if (!this.pending) {
@@ -340,6 +347,7 @@ export default {
     loadArea() {
       const trashes = require(`~/data/${this.area}.json`)
       this.trashes = trashes
+      console.log(this.trashes)
     },
     clearLocalStorage() {
       localStorage.clear()
