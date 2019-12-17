@@ -88,6 +88,7 @@
         :style="{ top: pin.top - 110 + 'px', left: pin.left + 12 + 'px' }"
         :remain="remain(pin.city)"
         :city="pin.ja"
+        @click.native="selectArea(`${pin.city}`)"
       />
     </div>
     <div v-show="showModal" class="modal" @click.self="showModal = false">
