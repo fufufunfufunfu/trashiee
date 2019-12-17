@@ -43,8 +43,8 @@
         </li>
       </ul>
       <div class="result__btn">
-        <nuxt-link to="/map">
-          <Button>マップにもどる</Button>
+        <nuxt-link to="/">
+          <Button>タイトルにもどる</Button>
         </nuxt-link>
       </div>
     </div>
