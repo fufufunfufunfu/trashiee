@@ -78,20 +78,6 @@ export default {
       }
     }
   },
-  data() {
-    return {
-      area: 'chiyoda',
-      showGauge: false
-    }
-  },
-  mounted() {
-    this.$route.query.area
-      ? (this.area = this.$route.query.area)
-      : (this.area = 'chiyoda')
-    this.$nextTick(() => {
-      this.showGauge = true
-    })
-  },
   filters: {
     typeToJapanese(value) {
       const route = this.$route
@@ -121,6 +107,20 @@ export default {
       }
       return ja
     }
+  },
+  data() {
+    return {
+      area: 'chiyoda',
+      showGauge: false
+    }
+  },
+  mounted() {
+    this.$route.query.area
+      ? (this.area = this.$route.query.area)
+      : (this.area = 'chiyoda')
+    this.$nextTick(() => {
+      this.showGauge = true
+    })
   },
   methods: {
     typeToJapanese(type) {

@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "lintfix": "eslint --fix --ext .js,.vue --ignore-path .gitignore .",
     "precommit": "npm run lint",
     "dev": "nuxt",
     "dev:cross": "cross-env NUXT_HOST=0.0.0.0 NUXT_PORT=3333 nuxt",
@@ -20,6 +21,7 @@
     "nuxt": "^2.0.0",
     "vue-awesome-swiper": "^3.1.3",
     "vue-lodash": "^2.0.2",
+    "vuedraggable": "^2.23.2",
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {

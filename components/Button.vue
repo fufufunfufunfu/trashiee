@@ -14,8 +14,8 @@
     v-else
     class="btn"
     :class="`btn--${type}`"
-    @click="$emit('click')"
     ontouchstart=""
+    @click="$emit('click')"
   >
     <slot></slot>
   </button>
@@ -62,12 +62,13 @@ export default {
 }
 
 .btn {
+  min-width: 300px;
   $c-bg: linear-gradient(270deg, #ff909e, #ffc37d);
   border: none;
   cursor: pointer;
   display: inline-block;
   color: $c-text_white;
-  font-size: 48px;
+  font-size: 32px;
   font-weight: 700;
   height: 56px;
   line-height: 56px;

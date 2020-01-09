@@ -1,34 +1,8 @@
 <template>
   <div class="game">
-    <transition name="splash">
-      <div v-if="showSplash" class="game__splash">
-        <p class="game__splash-msg">{{ splashMsg }}</p>
-      </div>
-    </transition>
-    <div v-if="showModal" class="game__modal">
-      <div class="game__slider">
-        <button class="game__slider-prev" @click="prevSlider">
-          <img src="~/assets/image/slider_left.svg" alt="" />
-        </button>
-        <div class="game__slider-img">
-          <img :src="slides[sliderNum - 1].img" alt="" />
-        </div>
-        <button class="game__slider-next" @click="nextSlider">
-          <img src="~/assets/image/slider_right.svg" alt="" />
-        </button>
-        <Button class="game__slider-btn" @click="startGame">{{
-          isLastSlider ? 'START' : 'SKIP'
-        }}</Button>
-      </div>
-    </div>
-    <span class="game__count">
-      <span class="current">{{ currentCount }}</span
-      >/{{ numProblem }}
-    </span>
-    <div class="game__window">
-      <img src="~/assets/image/window_left.svg" alt="" />
-      <img src="~/assets/image/window_right.svg" alt="" />
-    </div>
+    <GameBackground />
+    <GameSplash :message="splashMsg" />
+    <GameCount :current-count="1" :num-of-questions="10" />
     <div class="game__table-upper">
       <div class="game__table-wrap">
         <span class="game__fairy red">
@@ -68,10 +42,11 @@
         </div>
       </div>
     </div>
+    <TheTrash :trash="trashes[0]"/>
     <div
       v-if="trash"
-      class="game__waiter-wrap"
       id="waiter-anim"
+      class="game__waiter-wrap"
       :style="{ transform: `translateX(-${waiterOffset}px)` }"
     >
       <div class="game__waiter">
@@ -79,12 +54,12 @@
       </div>
       <div id="trash-dish">
         <span
-          class="game__trash"
           id="trash"
+          class="game__trash"
+          :data-trash-type="trash.type"
           @touchstart.prevent
           @touchmove.prevent="touchMove"
           @touchend.prevent="touchEnd"
-          :data-trash-type="trash.type"
         >
           <img :src="trash.img" alt="" draggable="false" />
         </span>
@@ -100,10 +75,26 @@
 
 <script>
 import Button from '~/components/Button'
+import GameBackground from '~/components/game/GameBackground.vue'
+import GameCount from '~/components/game/GameCount.vue'
+import GameSplash from '~/components/game/GameSplash.vue'
+import TheTrash from '~/components/trash/TheTrash.vue'
+
+function returnValueAfterWaitingASecond(value) {
+  return new Promise(resolve => {
+    window.setTimeout(() => {
+      resolve(value)
+    }, 1000)
+  })
+}
 
 export default {
   components: {
-    Button
+    Button,
+    GameBackground,
+    GameCount,
+    GameSplash,
+    TheTrash
   },
   data() {
     return {
@@ -193,26 +184,14 @@ export default {
   },
   mounted() {
     this.loadArea()
-    this.tutorial()
     // this.startGame()
   },
   methods: {
-    tutorial() {
-      this.showModal = true
-    },
     subtractFairy({ key, num }) {
       this.$store.commit(`${this.area}/subtractFairy`, {
         key: key,
         num: num
       })
-    },
-    prevSlider() {
-      this.sliderNum > 1 ? this.sliderNum-- : (this.sliderNum = 1)
-    },
-    nextSlider() {
-      this.sliderNum < this.slides.length
-        ? this.sliderNum++
-        : (this.sliderNum = this.slides.length)
     },
     touchMove(e) {
       if (this.pending) return
@@ -365,41 +344,15 @@ export default {
         this.$router.push({ path: 'result', query: { area: this.area } })
       }, 2000)
     },
-    startGame() {
+    async startGame() {
       this.showModal = false
       this.showSplash = true
-      this.splashMsg = 3
-      new Promise(resolve => {
-        window.setTimeout(() => {
-          window.console.log('2')
-          this.splashMsg = 2
-          resolve()
-        }, 1000)
-      })
-        .then(() => {
-          return new Promise(resolve => {
-            window.setTimeout(() => {
-              window.console.log('1')
-              this.splashMsg = 1
-              resolve()
-            }, 1000)
-          })
-        })
-        .then(() => {
-          return new Promise(resolve => {
-            window.setTimeout(() => {
-              window.console.log('start')
-              this.splashMsg = 'START!'
-              resolve()
-            }, 1000)
-          })
-        })
-        .then(() => {
-          window.setTimeout(() => {
-            this.showSplash = false
-            this.waiterMove()
-          }, 500)
-        })
+      this.splashMsg = '3'
+      this.splashMsg = await returnValueAfterWaitingASecond('2')
+      this.splashMsg = await returnValueAfterWaitingASecond('1')
+      this.splashMsg = await returnValueAfterWaitingASecond('START!')
+      this.splashMsg = await returnValueAfterWaitingASecond('')
+      // this.waiterMove()
     }
   }
 }
@@ -420,8 +373,8 @@ export default {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(#8f6f5d, #8c683d);
-  overflow: hidden;
+  // background: linear-gradient(#8f6f5d, #8c683d);
+  // overflow: hidden;s
   &__splash {
     position: absolute;
     z-index: 700;
@@ -458,12 +411,6 @@ export default {
     background: #fff;
     border-radius: 24px;
   }
-  &__slider-prev {
-    padding: 40px;
-  }
-  &__slider-next {
-    padding: 40px;
-  }
   &__slider-img {
     position: relative;
     flex-basis: 0;
@@ -485,24 +432,19 @@ export default {
     bottom: 40px;
   }
   &__count {
-    position: absolute;
-    top: 12px;
-    left: 64px;
-    z-index: 400;
-    display: inline-block;
-    font-size: 32px;
-    font-weight: 700;
-    color: $c-text_white;
-    .current {
-      font-size: 64px;
+    &__count {
+      position: absolute;
+      top: 12px;
+      left: 64px;
+      z-index: 400;
+      display: inline-block;
+      font-size: 32px;
+      font-weight: 700;
+      color: $c-text_white;
+      .current {
+        font-size: 64px;
+      }
     }
-  }
-  &__window {
-    position: absolute;
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    top: 0;
   }
   &__table-upper {
     display: flex;

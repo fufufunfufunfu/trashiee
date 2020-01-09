@@ -112,8 +112,9 @@ export default {
   plugins: [
     '~/plugins/anime',
     '~/plugins/lodash',
-    { src: '~plugins/swiper', ssr: false },
-    { src: '~plugins/persistedstate.js', ssr: false }
+    { src: '~/plugins/vuedraggable', mode: 'client' },
+    { src: '~plugins/swiper', mode: 'client' },
+    { src: '~plugins/persistedstate.js', mode: 'client' }
   ],
   /*
    ** Nuxt.js modules

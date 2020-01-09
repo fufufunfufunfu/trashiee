@@ -1,31 +1,11 @@
 @charset 'utf-8';
 
-@import 'variables';
-
-@font-face {
-  font-family: 'NotoSansCJKjp';
-  font-style: normal;
-  font-weight: 400;
-  src: url('~assets/font/NotoSansCJKjpRegular.woff2') format('woff2'), url('~assets/font/NotoSansCJKjpRegular.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'NotoSansCJKjp';
-  font-style: normal;
-  font-weight: 600;
-  src: url('~assets/font/NotoSansCJKjpMedium.woff2') format('woff2'), url('~assets/font/NotoSansCJKjpMedium.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'NotoSansCJKjp';
-  font-style: normal;
-  font-weight: 700;
-  src: url('~assets/font/NotoSansCJKjpBold.woff2') format('woff2'), url('~assets/font/NotoSansCJKjpBold.woff') format('woff');
-}
+@import "variables";
 
 body {
   color: $c-text;
   background-color: $c-bg;
   font-size: 14px;
-  font-family: 'NotoSansCJKjp', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Hiragino Sans", Arial, sans-serif;
+  font-family: noto-sans-cjk-jp, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Hiragino Sans", Arial,
+    sans-serif;
 }

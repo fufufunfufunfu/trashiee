@@ -1,5 +1,5 @@
 <template>
-  <ul class="gauge" v-if="show">
+  <ul v-if="show" class="gauge">
     <li v-for="key in keys" :key="key" class="gauge__item">
       <span class="gauge__img">
         <img :src="fairyImgs[key]" alt="" />
@@ -42,23 +42,6 @@ export default {
       required: true
     }
   },
-  watch: {
-    show: {
-      handler(val) {
-        if (!this.show) return
-        if (this.anime && val) {
-          this.c = this.current
-          this.o = this.old
-          this.countObj = this.$lodash.cloneDeep(this.old)
-          this.animation()
-        } else {
-          this.isAnimating = false
-          this.o = this.current
-          this.countObj = this.current
-        }
-      }
-    }
-  },
   data() {
     return {
       numInitFairy: NUM_INITIAL_FAIRY,
@@ -79,6 +62,23 @@ export default {
         resources: require('~/assets/image/shigen.png'),
         oversized: require('~/assets/image/sodai.png'),
         hazardous: require('~/assets/image/yugai.png')
+      }
+    }
+  },
+  watch: {
+    show: {
+      handler(val) {
+        if (!this.show) return
+        if (this.anime && val) {
+          this.c = this.current
+          this.o = this.old
+          this.countObj = this.$lodash.cloneDeep(this.old)
+          this.animation()
+        } else {
+          this.isAnimating = false
+          this.o = this.current
+          this.countObj = this.current
+        }
       }
     }
   },

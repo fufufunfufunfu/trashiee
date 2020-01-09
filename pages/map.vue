@@ -33,26 +33,26 @@
           mask="url(#path-3-inside-1)"
         />
         <path
+          id="nakano"
           d="M989.588 594.684C996.165 594.684 1001.5 589.351 1001.5 582.772C1001.5 576.194 996.165 570.861 989.588 570.861C983.011 570.861 977.679 576.194 977.679 582.772C977.679 589.351 983.011 594.684 989.588 594.684Z"
           fill="#E0FFE3"
           class="pin"
-          id="nakano"
           data-ja="中野区"
           @click="selectArea('nakano')"
         />
         <path
+          id="hachioji"
           d="M518.765 666.978C525.342 666.978 530.674 661.645 530.674 655.067C530.674 648.489 525.342 643.156 518.765 643.156C512.187 643.156 506.855 648.489 506.855 655.067C506.855 661.645 512.187 666.978 518.765 666.978Z"
           fill="#E0FFE3"
           class="pin"
-          id="hachioji"
           data-ja="八王子市"
           @click="selectArea('hachioji')"
         />
         <path
+          id="chiyoda"
           d="M1132.71 642.149C1139.29 642.149 1144.62 636.816 1144.62 630.238C1144.62 623.659 1139.29 618.326 1132.71 618.326C1126.13 618.326 1120.8 623.659 1120.8 630.238C1120.8 636.816 1126.13 642.149 1132.71 642.149Z"
           fill="#E0FFE3"
           class="pin"
-          id="chiyoda"
           data-ja="千代田区"
           @click="selectArea('chiyoda')"
         />
@@ -216,18 +216,18 @@ export default {
     Button,
     MapPin
   },
-  computed: {
-    current() {
-      return {
-        ...this.$store.state[this.selectedArea]
-      }
-    }
-  },
   data() {
     return {
       showModal: false,
       selectedArea: 'chiyoda',
       pins: []
+    }
+  },
+  computed: {
+    current() {
+      return {
+        ...this.$store.state[this.selectedArea]
+      }
     }
   },
   mounted() {
