@@ -91,10 +91,12 @@
         @click.native="selectArea(`${pin.city}`)"
       />
     </div>
+    <Tutorial class="tutorial" />
     <div v-show="showModal" class="modal" @click.self="showModal = false">
       <div class="modal__inner">
         <Gauge
           class="modal__gauge"
+          :selected-area="selectedArea"
           :old="current"
           :current="current"
           :show="showModal"
@@ -102,8 +104,8 @@
         />
         <p class="modal__text">このエリアで遊びますか？</p>
         <div class="modal__btn-wrap">
+          <Button class="modal__btn" @click="closeModal">もどる</Button>
           <Button class="modal__btn" @click="startGame">OK</Button>
-          <Button class="modal__btn" @click="showModal = false">もどる</Button>
         </div>
       </div>
     </div>
@@ -113,6 +115,12 @@
 <style lang="scss" scoped>
 .container {
   position: relative;
+}
+.tutorial {
+  position: absolute;
+  z-index: 10000;
+  top: 0;
+  left: 0;
 }
 .modal {
   position: absolute;
@@ -208,19 +216,22 @@
 import Gauge from '~/components/Gauge'
 import Button from '~/components/Button'
 import MapPin from '~/components/MapPin'
+import Tutorial from '~/components/game/Tutorial.vue'
 import { NUM_INITIAL_FAIRY } from '~/lib/constant'
 
 export default {
   components: {
     Gauge,
     Button,
-    MapPin
+    MapPin,
+    Tutorial
   },
   data() {
     return {
       showModal: false,
       selectedArea: 'chiyoda',
-      pins: []
+      pins: [],
+      bgm: null
     }
   },
   computed: {
@@ -243,13 +254,42 @@ export default {
         left
       })
     })
+
+    // this.bgm = new Audio(require('~/assets/sound/02_overview/bgm/bgm.mp3'))
+    // this.bgm.play()
+    // this.bgm.addEventListener('ended', () => {
+    //   this.bgm.currentTime = 0
+    //   this.bgm.play()
+    // })
+    this.$store.commit('bgm/pauseBgm')
+    const music = new Audio(require('~/assets/sound/02_overview/bgm/bgm.mp3'))
+    this.$store.commit('bgm/changeBgm', { newBgm: music })
+    this.$store.commit('bgm/playBgm')
   },
   methods: {
     selectArea(area) {
+      const selectSE = new Audio(
+        require('~/assets/sound/03_map/map_select/map_select.mp3')
+      )
+      selectSE.play()
       this.selectedArea = area
+      console.log(this.selectedArea)
+      // this.$nextTick(() => {
+      // this.showModal = true
+
+      // })
       this.showModal = true
     },
+    closeModal() {
+      const backSE = new Audio(
+        require('~/assets/sound/02_overview/cancel/cancel.mp3')
+      )
+      backSE.play()
+      this.showModal = false
+    },
     startGame() {
+      const okSE = new Audio(require('~/assets/sound/02_overview/ok/ok.mp3'))
+      okSE.play()
       this.$router.push({ path: 'game', query: { area: this.selectedArea } })
     },
     remain(area) {

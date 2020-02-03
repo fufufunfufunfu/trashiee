@@ -40,19 +40,15 @@ export default {
     show: {
       type: Boolean,
       required: true
+    },
+    selectedArea: {
+      type: String
     }
   },
   data() {
     return {
       numInitFairy: NUM_INITIAL_FAIRY,
       isAnimating: false,
-      keys: [
-        'combustible',
-        'incombustible',
-        'resources',
-        'oversized',
-        'hazardous'
-      ],
       c: null,
       o: null,
       countObj: null,
@@ -62,6 +58,21 @@ export default {
         resources: require('~/assets/image/shigen.png'),
         oversized: require('~/assets/image/sodai.png'),
         hazardous: require('~/assets/image/yugai.png')
+      }
+    }
+  },
+  computed: {
+    keys() {
+      if (this.selectedArea === 'hachioji') {
+        return [
+          'combustible',
+          'incombustible',
+          'resources',
+          'oversized',
+          'hazardous'
+        ]
+      } else {
+        return ['combustible', 'incombustible', 'resources', 'oversized']
       }
     }
   },

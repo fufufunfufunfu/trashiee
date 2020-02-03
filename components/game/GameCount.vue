@@ -1,7 +1,7 @@
 <template>
   <span class="game-count">
     <span class="game-count__current">{{ currentCount }}</span>
-    <span class="game-count__total">/{{ numOfQuestions }}</span>
+    <span class="game-count__total">/{{ numOfQuestions }}問中</span>
   </span>
 </template>
 

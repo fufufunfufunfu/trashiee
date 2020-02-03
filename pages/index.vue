@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="tap-area" @click="$router.push('map')">
+    <div class="tap-area" @click="startGame">
       <div class="logo">
         <img src="~/assets/image/title.png" alt="" />
       </div>
@@ -82,9 +82,27 @@
 <script>
 export default {
   data() {
-    return {}
+    return {
+      bgmTitle: null,
+      bgmMap: null
+    }
   },
-  mounted() {},
-  methods: {}
+  mounted() {
+    this.$store.commit('bgm/pauseBgm')
+    const music = new Audio(
+      require('~/assets/sound/01_title/bgm/title_bgm.mp3')
+    )
+    this.$store.commit('bgm/changeBgm', { newBgm: music })
+    this.$store.commit('bgm/playBgm')
+  },
+  methods: {
+    startGame() {
+      const startSE = new Audio(
+        require('~/assets/sound/01_title/start/title_start.mp3')
+      )
+      startSE.play()
+      this.$router.push('map')
+    }
+  }
 }
 </script>

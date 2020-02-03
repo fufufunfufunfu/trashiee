@@ -1,75 +1,29 @@
 <template>
   <div class="game">
     <GameBackground />
-    <GameSplash :message="splashMsg" />
-    <GameCount :current-count="1" :num-of-questions="10" />
-    <div class="game__table-upper">
-      <div class="game__table-wrap">
-        <span class="game__fairy red">
-          <img :src="fairyImgs.combustible" alt="" />
-        </span>
-        <span class="game__fairy blue">
-          <img :src="fairyImgs.incombustible" alt="" />
-        </span>
-        <div class="game__table">
-          <span class="drop-zone red" data-trash-type="combustible"></span>
-          <span class="drop-zone blue" data-trash-type="incombustible"></span>
-          <img src="~/assets/image/table.svg" alt="" />
-        </div>
-      </div>
-      <div class="game__table-wrap">
-        <span class="game__fairy green">
-          <img :src="fairyImgs.resources" alt="" />
-        </span>
-        <span class="game__fairy yellow">
-          <img :src="fairyImgs.oversized" alt="" />
-        </span>
-        <div class="game__table">
-          <span class="drop-zone green" data-trash-type="resources"></span>
-          <span class="drop-zone yellow" data-trash-type="oversized"></span>
-          <img src="~/assets/image/table.svg" alt="" />
-        </div>
-      </div>
-    </div>
-    <div class="game__table-lower">
-      <div class="game__table-wrap">
-        <span class="game__fairy purple">
-          <img :src="fairyImgs.hazardous" alt="" />
-        </span>
-        <div class="game__table">
-          <span class="drop-zone purple" data-trash-type="hazardous"></span>
-          <img src="~/assets/image/table.svg" alt="" />
-        </div>
-      </div>
-    </div>
-    <TheTrash :trash="trashes[0]"/>
-    <div
-      v-if="trash"
-      id="waiter-anim"
-      class="game__waiter-wrap"
-      :style="{ transform: `translateX(-${waiterOffset}px)` }"
-    >
-      <div class="game__waiter">
-        <img src="~/assets/image/waiter.png" alt="" />
-      </div>
-      <div id="trash-dish">
-        <span
-          id="trash"
-          class="game__trash"
-          :data-trash-type="trash.type"
-          @touchstart.prevent
-          @touchmove.prevent="touchMove"
-          @touchend.prevent="touchEnd"
-        >
-          <img :src="trash.img" alt="" draggable="false" />
-        </span>
-      </div>
-    </div>
-    <p>{{ combustible }}</p>
-    <button @click="subtractFairy({ key: 'combustible', num: 10 })">
-      可燃をひく
-    </button>
-    <button @click="clearLocalStorage">クリア</button>
+    <GameSplash :message="splashMsg" class="splash" />
+    <GameCount :current-count="currentCount" :num-of-questions="numProblem" />
+    <ul class="table-list">
+      <li
+        v-for="fairies in fairiesArray"
+        :key="fairies[0]"
+        class="table-list__item table-item"
+      >
+        <Table>
+          <ul class="table__fairy-list fairy-list">
+            <li v-for="fairy in fairies" :key="fairy" class="fairy-list__item">
+              <DropZone :list-key="fairy" @answered="answered" />
+            </li>
+          </ul>
+        </Table>
+      </li>
+    </ul>
+    <TheWaiter
+      id="waiter"
+      :trash="trashes[0]"
+      :style="styleWaiter"
+      class="waiter"
+    />
   </div>
 </template>
 
@@ -78,7 +32,10 @@ import Button from '~/components/Button'
 import GameBackground from '~/components/game/GameBackground.vue'
 import GameCount from '~/components/game/GameCount.vue'
 import GameSplash from '~/components/game/GameSplash.vue'
-import TheTrash from '~/components/trash/TheTrash.vue'
+import TheWaiter from '~/components/game/TheWaiter.vue'
+import DropZone from '~/components/trash/DropZone.vue'
+import Fairy from '~/components/game/Fairy.vue'
+import Table from '~/components/game/Table.vue'
 
 function returnValueAfterWaitingASecond(value) {
   return new Promise(resolve => {
@@ -88,13 +45,37 @@ function returnValueAfterWaitingASecond(value) {
   })
 }
 
+function countdownSE() {
+  const se = new Audio(
+    require('~/assets/sound/05_gameplay/countdown/countdown.mp3')
+  )
+  se.play()
+}
+
+function startSE() {
+  const se = new Audio(
+    require('~/assets/sound/05_gameplay/game_start/game_start.mp3')
+  )
+  se.play()
+}
+
+function finishSE() {
+  const se = new Audio(
+    require('~/assets/sound/05_gameplay/game_finish/game_finish.mp3')
+  )
+  se.play()
+}
+
 export default {
   components: {
     Button,
     GameBackground,
     GameCount,
     GameSplash,
-    TheTrash
+    TheWaiter,
+    DropZone,
+    Fairy,
+    Table
   },
   data() {
     return {
@@ -105,13 +86,8 @@ export default {
       anime: null,
       pending: false,
       showModal: false,
-      currentSlider: {
-        num: 1,
-        img: require(`~/assets/image/house_1.svg`)
-      },
-      solvedCount: 0,
-      currentCount: 1,
-      numProblem: 10,
+      currentCount: 0,
+      numProblem: 3,
       results: [],
       waiterOffset: 250,
       trash: null,
@@ -123,35 +99,15 @@ export default {
           type: 'combustible',
           img: require('~/assets/image/sample.png')
         }
-      ],
-      slides: [
-        { img: require(`~/assets/image/slide_1.png`) },
-        { img: require(`~/assets/image/slide_2.png`) }
-      ],
-      fairyImgs: {
-        combustible: require('~/assets/image/kanen.png'),
-        incombustible: require('~/assets/image/funen.png'),
-        resources: require('~/assets/image/shigen.png'),
-        oversized: require('~/assets/image/sodai.png'),
-        hazardous: require('~/assets/image/yugai.png')
-      },
-      fairyGoodImgs: {
-        combustible: require('~/assets/image/kanen_good.png'),
-        incombustible: require('~/assets/image/funen_good.png'),
-        resources: require('~/assets/image/shigen_good.png'),
-        oversized: require('~/assets/image/sodai_good.png'),
-        hazardous: require('~/assets/image/yugai_good.png')
-      },
-      fairyBadImgs: {
-        combustible: require('~/assets/image/kanen_bad.png'),
-        incombustible: require('~/assets/image/funen_bad.png'),
-        resources: require('~/assets/image/shigen_bad.png'),
-        oversized: require('~/assets/image/sodai_bad.png'),
-        hazardous: require('~/assets/image/yugai_bad.png')
-      }
+      ]
     }
   },
   computed: {
+    styleWaiter() {
+      return {
+        transform: `translateX(-${this.waiterOffset}px)`
+      }
+    },
     combustible() {
       return this.$store.state[this.area].combustible
     },
@@ -167,179 +123,122 @@ export default {
     hazardous() {
       return this.$store.state[this.area].hazardous
     },
-    prevSliderBtn() {
-      return this.sliderNum > 1
-    },
-    nextSliderBtn() {
-      return this.sliderNum < 4
-    },
-    isLastSlider() {
-      return this.sliderNum === this.slides.length
+    fairiesArray() {
+      if (this.area === 'hachioji') {
+        return [
+          ['combustible', 'incombustible'],
+          ['hazardous'],
+          ['recyclable', 'oversized']
+        ]
+      } else {
+        return [['combustible', 'incombustible'], ['recyclable', 'oversized']]
+      }
     }
   },
   created() {
     this.$route.query.area
       ? (this.area = this.$route.query.area)
       : (this.area = 'chiyoda')
+    this.clearResults()
+    this.removeTrash()
+    this.loadArea()
   },
   mounted() {
-    this.loadArea()
-    // this.startGame()
+    this.$store.commit('bgm/pauseBgm')
+    this.startGame()
   },
   methods: {
+    answered(obj) {
+      console.log('answered')
+      if (obj.solved) {
+        this.subtractFairy({ key: obj.type, num: 1 })
+      }
+      this.pushResult(obj)
+      // this.incrementCount()
+      this.moveWaiter()
+    },
+    skipAnswer() {
+      console.log('skip answer')
+      this.removeTrash()
+      this.pushResult({
+        solved: false,
+        answer: null,
+        ...this.trash
+      })
+      // this.incrementCount()
+      this.resetWaiter()
+    },
     subtractFairy({ key, num }) {
       this.$store.commit(`${this.area}/subtractFairy`, {
         key: key,
         num: num
       })
     },
-    touchMove(e) {
-      if (this.pending) return
-      const ele = e.currentTarget
-      document.documentElement.appendChild(ele)
-
-      // ele.parentNode.removeChild(ele)
-      const touch = e.changedTouches[0]
-      ele.style.position = 'fixed'
-      ele.style.top =
-        touch.pageY - window.pageYOffset - ele.offsetHeight / 2 + 'px'
-      ele.style.left =
-        touch.pageX - window.pageXOffset - ele.offsetWidth / 2 + 'px'
+    clearResults() {
+      this.$store.commit('result/clearResults')
     },
-    touchEnd(e) {
-      // ドラッグ中の操作のために変更していたスタイルを元に戻す
-      const droppedElem = e.currentTarget
-      droppedElem.style.position = 'relative'
-      droppedElem.style.top = ''
-      droppedElem.style.left = ''
-
-      // ドロップした位置にあるドロップ可能なエレメントに親子付けする
-      const touch = event.changedTouches[0]
-      // スクロール分を加味した座標に存在するエレメントを新しい親とする
-      const newParentElem = document.elementFromPoint(
-        touch.pageX - window.pageXOffset,
-        touch.pageY - window.pageYOffset
-      )
-      window.console.log(newParentElem)
-      if (newParentElem.classList.contains('drop-zone')) {
-        newParentElem.appendChild(droppedElem)
-        this.pending = true
-        this.judgeTrash(newParentElem, droppedElem)
-      } else {
-        droppedElem.parentNode.removeChild(droppedElem)
-        const dish = document.getElementById('trash-dish')
-
-        dish.appendChild(droppedElem)
+    removeTrash() {
+      this.$store.commit('trash/removeTrash')
+    },
+    pushResult(obj) {
+      this.$store.commit('result/pushResult', obj)
+    },
+    incrementCount() {
+      this.currentCount++
+    },
+    resetWaiter() {
+      if (this.currentCount >= this.numProblem) {
+        this.finishGame()
+        return
       }
-    },
-    judgeTrash(zone, ele) {
-      window.console.log(zone, ele)
-      const zoneType = zone.dataset.trashType
-      window.console.log(zone.dataset.trashType)
-      const eleType = ele.dataset.trashType
-      if (eleType === zoneType) {
-        this.solvedCount++
-        this.subtractFairy({ key: zoneType, num: 1 })
-        const currentImg = this.fairyImgs[zoneType]
-        this.fairyImgs[zoneType] = this.fairyGoodImgs[zoneType]
-        window.setTimeout(() => {
-          this.fairyImgs[zoneType] = currentImg
-        }, 2000)
-        this.results.push({
-          img: this.trash.img,
-          answer: zoneType,
-          correct: eleType,
-          solved: true
-        })
-      } else {
-        const currentImg = this.fairyImgs[zoneType]
-        this.fairyImgs[zoneType] = this.fairyBadImgs[zoneType]
-        window.setTimeout(() => {
-          this.fairyImgs[zoneType] = currentImg
-        }, 2000)
-        this.results.push({
-          img: this.trash.img,
-          answer: zoneType,
-          correct: eleType,
-          solved: false
-        })
-        ele.parentNode.removeChild(ele)
-        const dish = document.getElementById('trash-dish')
-
-        dish.appendChild(ele)
-      }
-      this.anime.pause()
-      this.anime = this.$anime({
-        targets: '#waiter-anim',
-        translateX: innerWidth + this.waiterOffset,
-        easing: 'linear',
-        duration: 2000
-      })
-      this.anime.finished.then(this.clearTrash)
-    },
-    waiterMove() {
+      this.incrementCount()
+      this.removeTrash()
       const innerWidth = window.innerWidth
-      window.console.log(innerWidth)
       this.selectTrash()
       this.$nextTick(() => {
         this.anime = this.$anime({
-          targets: '#waiter-anim',
+          targets: '#waiter',
           translateX: [-this.waiterOffset, innerWidth + this.waiterOffset],
           easing: 'linear',
-          duration: 20000
+          duration: 22000
         })
-        this.anime.finished.then(this.clearTrash)
+        this.anime.finished.then(this.skipAnswer)
       })
+    },
+    moveWaiter() {
+      console.log('move waiter')
+      this.anime.pause()
+      this.anime = this.$anime({
+        targets: '#waiter',
+        translateX: innerWidth + this.waiterOffset,
+        easing: 'linear',
+        duration: 3000
+      })
+      this.anime.finished.then(this.resetWaiter)
     },
     selectTrash() {
       let index = Math.floor(Math.random() * this.trashes.length)
-      console.log(index)
       while (index === this.previousTrashIndex) {
         index = Math.floor(Math.random() * this.trashes.length)
       }
       this.trash = this.trashes[index]
+      this.$store.commit('trash/generateTrash', this.trash)
       this.previousTrashIndex = index
-    },
-    clearTrash() {
-      if (!this.pending) {
-        const trash = document.getElementById('trash')
-        this.results.push({
-          img: this.trash.img,
-          answer: null,
-          correct: trash.dataset.trashType,
-          solved: false
-        })
-      }
-      this.trash = null
-      const ele = document.getElementById('trash')
-      ele.parentNode.removeChild(ele)
-      const dish = document.getElementById('trash-dish')
-      dish.appendChild(ele)
-      this.pending = false
-      if (this.currentCount < 10) {
-        this.currentCount++
-        this.waiterMove()
-      } else {
-        this.finishGame()
-      }
     },
     loadArea() {
       const trashes = require(`~/data/${this.area}.json`)
       this.trashes = trashes
-      console.log(this.trashes)
     },
     clearLocalStorage() {
       localStorage.clear()
     },
-    insertResults() {
-      this.$store.commit('result/insertResults', { results: this.results })
-    },
     finishGame() {
+      this.$store.commit('bgm/pauseBgm')
+      finishSE()
+
       this.trash = null
-      this.insertResults()
+      this.removeTrash()
       this.splashMsg = 'FINISH!'
-      this.showSplash = true
-      window.console.log(this.results)
       window.setTimeout(() => {
         this.$router.push({ path: 'result', query: { area: this.area } })
       }, 2000)
@@ -348,11 +247,21 @@ export default {
       this.showModal = false
       this.showSplash = true
       this.splashMsg = '3'
+      countdownSE()
       this.splashMsg = await returnValueAfterWaitingASecond('2')
+      countdownSE()
       this.splashMsg = await returnValueAfterWaitingASecond('1')
+      countdownSE()
       this.splashMsg = await returnValueAfterWaitingASecond('START!')
+      startSE()
       this.splashMsg = await returnValueAfterWaitingASecond('')
-      // this.waiterMove()
+      this.resetWaiter()
+
+      const music = new Audio(
+        require('~/assets/sound/05_gameplay/bgm/play_bgm_02.mp3')
+      )
+      this.$store.commit('bgm/changeBgm', { newBgm: music })
+      this.$store.commit('bgm/playBgm')
     }
   }
 }
@@ -360,6 +269,11 @@ export default {
 
 <style lang="scss" scoped>
 .splash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   &-enter-active,
   &-leave-active {
     transition: opacity 0.5s;
@@ -374,7 +288,7 @@ export default {
   width: 100vw;
   height: 100vh;
   // background: linear-gradient(#8f6f5d, #8c683d);
-  // overflow: hidden;s
+  // overflow: hidden;
   &__splash {
     position: absolute;
     z-index: 700;
@@ -514,35 +428,30 @@ export default {
     }
   }
 }
-.drop-zone {
+.table-list {
   position: absolute;
-  top: -100px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: flex-end;
-  width: 180px;
-  height: 250px;
-  // opacity: 0.2;
-  &.red {
-    left: 0;
-    // background: red;
+  top: 190px;
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  padding: 0 40px;
+  &__item {
+    list-style: none;
   }
-  &.blue {
-    right: 0;
-    // background: blue;
+}
+.table-item {
+  width: 300px;
+}
+.fairy-list {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  &__item {
+    list-style: none;
   }
-  &.green {
-    left: 0;
-    // background: green;
-  }
-  &.yellow {
-    right: 0;
-    // background: yellow;
-  }
-  &.purple {
-    left: 50%;
-    transform: translateX(-50%);
-    // background: purple;
-  }
+}
+.waiter {
+  position: absolute;
+  bottom: 40px;
 }
 </style>

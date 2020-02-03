@@ -21,12 +21,12 @@
   },
   {
     "name": "雑誌",
-    "type": "resources",
+    "type": "recyclable",
     "img": "/trash/magazine.png"
   },
   {
     "name": "牛乳パック",
-    "type": "resources",
+    "type": "recyclable",
     "img": "/trash/milk.png"
   },
   {

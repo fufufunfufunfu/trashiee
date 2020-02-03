@@ -9,7 +9,7 @@
     "lintfix": "eslint --fix --ext .js,.vue --ignore-path .gitignore .",
     "precommit": "npm run lint",
     "dev": "nuxt",
-    "dev:cross": "cross-env NUXT_HOST=0.0.0.0 NUXT_PORT=3333 nuxt",
+    "dev:cross": "cross-env NUXT_HOST=0.0.0.0 NUXT_PORT=3000 nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate"

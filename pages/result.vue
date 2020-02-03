@@ -35,16 +35,16 @@
           <span
             class="result__answer"
             :class="[
-              result.correct,
+              result.type,
               $route.query.area === 'nakano' ? 'nakano' : ''
             ]"
-            >{{ typeToJapanese(result.correct) }}</span
+            >{{ typeToJapanese(result.type) }}</span
           >
         </li>
       </ul>
       <div class="result__btn">
         <nuxt-link to="/">
-          <Button>タイトルにもどる</Button>
+          <Button @click="backToTitle">タイトルにもどる</Button>
         </nuxt-link>
       </div>
     </div>
@@ -92,7 +92,7 @@ export default {
             ja = 'とうき・ガラス・金属'
           }
           break
-        case 'resources':
+        case 'recyclable':
           ja = 'しげんごみ'
           break
         case 'oversized':
@@ -115,6 +115,11 @@ export default {
     }
   },
   mounted() {
+    this.$store.commit('bgm/pauseBgm')
+    const music = new Audio(require('~/assets/sound/06_result/bgm/bgm.mp3'))
+    this.$store.commit('bgm/changeBgm', { newBgm: music })
+    this.$store.commit('bgm/playBgm')
+
     this.$route.query.area
       ? (this.area = this.$route.query.area)
       : (this.area = 'chiyoda')
@@ -123,6 +128,12 @@ export default {
     })
   },
   methods: {
+    backToTitle() {
+      const backSE = new Audio(
+        require('~/assets/sound/06_result/title_return/ok.mp3')
+      )
+      backSE.play()
+    },
     typeToJapanese(type) {
       let ja = ''
       switch (type) {
@@ -135,7 +146,7 @@ export default {
             ja = 'とうき・ガラス・金属'
           }
           break
-        case 'resources':
+        case 'recyclable':
           ja = 'しげんごみ'
           break
         case 'oversized':
@@ -216,7 +227,7 @@ export default {
         font-size: 20px;
       }
     }
-    &.resources {
+    &.recyclable {
       color: #1d957f;
       background: #97ffcd;
     }
